@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface TripRepository extends JpaRepository<Trip, Long> {
     List<Trip> findByLoginUser_Id(Long userId);
+    List<Trip> findAllByLoginUser_Id(Long userId);
 
 
 }

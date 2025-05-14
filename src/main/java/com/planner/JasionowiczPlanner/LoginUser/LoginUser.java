@@ -23,9 +23,10 @@ public class LoginUser {
 
     @Column(nullable = false)
     private String password;
-
+    private String name;
     private String email;
-
+    @Enumerated(EnumType.STRING)
+    private LoginUserRole role;
     @OneToMany(mappedBy = "loginUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Trip> trips;
 

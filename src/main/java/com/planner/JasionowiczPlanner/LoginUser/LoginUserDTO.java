@@ -18,5 +18,7 @@ public class LoginUserDTO {
     private String password;
     private String email;
     private List<Trip> trips;
+    private String name;
+    private LoginUserRole role;
 
 }
