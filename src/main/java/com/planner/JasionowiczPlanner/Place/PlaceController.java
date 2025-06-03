@@ -1,5 +1,7 @@
 package com.planner.JasionowiczPlanner.Place;
 
+import com.planner.JasionowiczPlanner.Trip.TripDTO;
+import com.planner.JasionowiczPlanner.Trip.TripService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,10 +10,12 @@ import java.util.List;
 
 @RestController
 public class PlaceController {
+    private final TripService tripService;
     private PlaceService placeService;
 
-    public PlaceController(PlaceService placeService) {
+    public PlaceController(PlaceService placeService, TripService tripService) {
         this.placeService = placeService;
+        this.tripService = tripService;
     }
 
     @GetMapping("/places/all")
@@ -91,6 +95,10 @@ public class PlaceController {
         return ResponseEntity.ok(placeService.getPlacesNear(lat, lon, radius));
     }
 
+    @GetMapping("/trip/{id}/places")
+    public List<PlaceDTO> getPlacesByTripId(@PathVariable Long id) {
+        return placeService.getPlacesByTripId(id);
+    }
 
 
 }

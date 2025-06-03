@@ -1,7 +1,10 @@
 package com.planner.JasionowiczPlanner.Trip;
 
+import com.planner.JasionowiczPlanner.Reminder.ReminderDTO;
+import com.planner.JasionowiczPlanner.Task.TaskDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,18 +17,18 @@ private TripService tripService;
         this.tripService = tripService;
     }
 
-    @GetMapping("/trips/{userId}")
-    public ResponseEntity<List<TripDTO>> getTrips(@PathVariable Long userId) {
-        List<TripDTO> tripsDto = tripService.getUserTrips(userId);
+    @GetMapping("/trips")
+    public ResponseEntity<List<TripDTO>> getTrips(Authentication authentication) {
 
-       return tripsDto.isEmpty()
-               ? ResponseEntity.noContent().header("No Trips Found").build()
-               : ResponseEntity.ok().header("Trips Found").body(tripsDto);
+        List<TripDTO> tripsDto = tripService.getTripsByAuthentication(authentication);
+        return tripsDto.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(tripsDto);
     }
 
     @PostMapping("/trips")
-    public ResponseEntity<String> createTrip(@RequestBody TripDTO trip) {
-        tripService.addTrip(trip);
+    public ResponseEntity<String> createTrip(@RequestBody TripDTO trip,Authentication authentication) {
+        tripService.addTrip(trip,authentication);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Trip created succesfully")
@@ -59,6 +62,33 @@ private TripService tripService;
                 : ResponseEntity.ok()
                 .header("Trip Found")
                 .body(tripDTO);
+    }
+
+
+    @GetMapping("/trip/{tripId}/tasks")
+    public ResponseEntity<List<TaskDTO>> getTasks(@PathVariable Long tripId, Authentication authentication) {
+       List<TaskDTO> taskDTOList = tripService.getTasksByTripId(tripId);
+        if (taskDTOList.isEmpty()) {
+            return ResponseEntity.noContent()
+                    .header("X-Info", "No Tasks Found")
+                    .build();
+        }
+        return ResponseEntity.ok()
+                .header("X-Info", "Tasks Found")
+                .body(taskDTOList);
+    }
+
+    @GetMapping("/trip/{tripId}/reminders")
+    public ResponseEntity<List<ReminderDTO>> getReminders(@PathVariable Long tripId, Authentication authentication) {
+        List<ReminderDTO> reminderDTOList = tripService.getRemindersByTripId(tripId);
+        if (reminderDTOList.isEmpty()) {
+            return ResponseEntity.noContent()
+                    .header("X-Info", "No Reminders Found")
+                    .build();
+        }
+        return ResponseEntity.ok()
+                .header("X-Info", "Reminders Found")
+                .body(reminderDTOList);
     }
 
 }

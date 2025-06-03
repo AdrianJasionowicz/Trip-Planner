@@ -1,6 +1,7 @@
 package com.planner.JasionowiczPlanner.LoginUser;
 
 import com.planner.JasionowiczPlanner.Trip.Trip;
+import com.planner.JasionowiczPlanner.Trip.TripDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,7 @@ public class LoginUserDTO {
     private String username;
     private String password;
     private String email;
-    private List<Trip> trips;
+    private List<TripDTO> trips;
     private String name;
     private LoginUserRole role;
 

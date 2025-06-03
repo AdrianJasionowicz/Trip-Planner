@@ -12,7 +12,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t FROM Task t WHERE t.trip.loginUser.id = :userId")
     List<Task> findAllByTrip_LoginUserId(@Param("userId") Long userId);
     List<Task> findByTrip_LoginUser_IdAndDone(Long userId, Boolean done);
-
+    List<Task> findAllByTrip_LoginUser_Id(Long userId);
 
 
 

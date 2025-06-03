@@ -3,6 +3,7 @@ package com.planner.JasionowiczPlanner.Task;
 import com.planner.JasionowiczPlanner.Mapper.TaskMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,12 +43,13 @@ public class TaskController {
 
     @PostMapping("/tasks")
     public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
-        taskService.createNewTask(taskDTO);
+       taskService.createNewTask(taskDTO);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .header("Task created succesfully")
-                .build();
+                .body(taskDTO);
     }
+
+
     @PutMapping("/tasks/{id}")
     public ResponseEntity<TaskDTO> updateTask(@PathVariable Long id, @RequestBody TaskDTO taskDTO) {
         taskService.updateTask(id,taskDTO);
@@ -83,26 +85,13 @@ public class TaskController {
                 : ResponseEntity.ok(tasks);
     }
 
+
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskDTO>> getTasksByUserAndDone(
-            @RequestParam Long userId,
-            @RequestParam(required = false) Boolean done
-    ) {
-        List<TaskDTO> tasks = (done == null)
-                ? taskService.getAllTaskByUserId(userId)
-                : taskService.getTasksByUserAndDone(userId, done);
-
-        return tasks.isEmpty()
+    public ResponseEntity<List<TaskDTO>> getTasksByUser(Authentication authentication ) {
+        List<TaskDTO> taskDTOS = taskService.getAllTaskByUserAuthentication(authentication);
+        return taskDTOS.isEmpty()
                 ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(tasks);
-    }
-
-    @GetMapping("/tasks/user/{userId}/done/{done}")
-    public ResponseEntity<List<TaskDTO>> getDoneTasksByUser(@PathVariable Long userId, @PathVariable Boolean done) {
-        List<TaskDTO> tasks = taskService.getTasksByUserAndDone(userId, done);
-        return tasks.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(tasks);
+                : ResponseEntity.ok(taskDTOS);
     }
 
 }

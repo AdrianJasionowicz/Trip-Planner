@@ -1,6 +1,7 @@
 package com.planner.JasionowiczPlanner.Place;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.planner.JasionowiczPlanner.Trip.Trip;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,17 +32,20 @@ public class Place {
     @ManyToOne
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
-    private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate createdAt;
     private String imageUrl;
-    private LocalDateTime visitDateTimeFrom;
-    private LocalDateTime visitDateTimeTo;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate visitDateTimeFrom;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate visitDateTimeTo;
 
     private String notes;
     @ElementCollection
     private List<String> tags;
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDate.now();
     }
 
 

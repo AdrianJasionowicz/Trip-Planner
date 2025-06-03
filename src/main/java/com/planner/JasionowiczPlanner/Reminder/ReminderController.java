@@ -2,9 +2,11 @@ package com.planner.JasionowiczPlanner.Reminder;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class ReminderController {
@@ -77,5 +79,16 @@ public class ReminderController {
 //    public List<ReminderDTO> getNearRemindersForUser(@AuthenticationPrincipal User user) {
 //        return reminderService.getNearRemindersForUser(user.getId());
 //    }
+
+
+    @PostMapping("/reminders/{id}/send-ics")
+    public ResponseEntity<Void> sendReminderIcs(@PathVariable Long id, Authentication authentication) {
+
+        reminderService.sendReminderAsIcsEmail(id,authentication);
+        return ResponseEntity.ok().build();
+    }
+
+
+
 
 }

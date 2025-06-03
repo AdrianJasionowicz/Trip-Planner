@@ -1,7 +1,9 @@
 package com.planner.JasionowiczPlanner.Place;
 
 import com.planner.JasionowiczPlanner.Mapper.PlaceMapper;
+import com.planner.JasionowiczPlanner.Mapper.TripMapper;
 import com.planner.JasionowiczPlanner.Trip.Trip;
+import com.planner.JasionowiczPlanner.Trip.TripRepository;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,10 +18,14 @@ import java.util.stream.Collectors;
 public class PlaceService {
     private PlaceRepository placeRepository;
     private PlaceMapper placeMapper;
+    private TripMapper tripMapper;
+    private TripRepository tripRepository;
 
-    public PlaceService(PlaceRepository placeRepository, PlaceMapper placeMapper) {
+    public PlaceService(PlaceRepository placeRepository, PlaceMapper placeMapper, TripMapper tripMapper, TripRepository tripRepository) {
         this.placeRepository = placeRepository;
         this.placeMapper = placeMapper;
+        this.tripMapper = tripMapper;
+        this.tripRepository = tripRepository;
     }
 
     public List<PlaceDTO> getAllPlaces() {
@@ -35,10 +41,32 @@ public class PlaceService {
         return placeDTO;
     }
 
-    public void createNewPlace(PlaceDTO placeDTO) {
-        Place place = placeMapper.toEntity(placeDTO);
-        placeRepository.save(place);
+    public Place createNewPlace(PlaceDTO dto) {
+        if (dto.getTripId() == null) {
+            throw new IllegalArgumentException("Trip ID is required");
+        }
+
+        Trip trip = tripRepository.findById(dto.getTripId())
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found for ID: " + dto.getTripId()));
+
+        Place place = new Place();
+        place.setName(dto.getName());
+        place.setDescription(dto.getDescription());
+        place.setLatitude(dto.getLatitude());
+        place.setLongitude(dto.getLongitude());
+        place.setGoogleMapsUrl(dto.getGoogleMapsUrl());
+        place.setCreatedAt(dto.getCreatedAt());
+        place.setImageUrl(dto.getImageUrl());
+        place.setVisitDateTimeFrom(dto.getVisitDateTimeFrom());
+        place.setVisitDateTimeTo(dto.getVisitDateTimeTo());
+        place.setNotes(dto.getNotes());
+        place.setTags(dto.getTags());
+        place.setTrip(trip);
+
+        return placeRepository.save(place);
     }
+
+
 
     public void patchPlace(long id, PlaceDTO placeDTO) {
         Place place = placeRepository.getReferenceById(id);
@@ -57,9 +85,11 @@ public class PlaceService {
         if (placeDTO.getGoogleMapsUrl() != null) {
             place.setGoogleMapsUrl(placeDTO.getGoogleMapsUrl());
         }
-        if (placeDTO.getTrip() != null) {
-            place.setTrip(placeDTO.getTrip());
+        if (placeDTO.getTripId() != null) {
+            Trip trip = tripRepository.getReferenceById(placeDTO.getTripId());
+            place.setTrip(trip);
         }
+
         if (placeDTO.getCreatedAt() != null) {
             place.setCreatedAt(placeDTO.getCreatedAt());
         }
@@ -91,7 +121,11 @@ public class PlaceService {
         Optional.ofNullable(placeDTO.getLatitude()).ifPresent(place::setLatitude);
         Optional.ofNullable(placeDTO.getLongitude()).ifPresent(place::setLongitude);
         Optional.ofNullable(placeDTO.getGoogleMapsUrl()).ifPresent(place::setGoogleMapsUrl);
-        Optional.ofNullable(placeDTO.getTrip()).ifPresent(place::setTrip);
+
+        Optional.ofNullable(placeDTO.getTripId()).ifPresent(tripDto -> {
+            Trip trip = tripRepository.getReferenceById(tripDto);
+            place.setTrip(trip);
+        });
         Optional.ofNullable(placeDTO.getCreatedAt()).ifPresent(place::setCreatedAt);
         Optional.ofNullable(placeDTO.getImageUrl()).ifPresent(place::setImageUrl);
         Optional.ofNullable(placeDTO.getVisitDateTimeFrom()).ifPresent(place::setVisitDateTimeFrom);
@@ -128,6 +162,11 @@ public class PlaceService {
                 .map(placeMapper::toDto)
                 .toList();
     }
+    public List<PlaceDTO> getPlacesByTripId(Long tripId) {
+        List<Place> places = placeRepository.findAllByTripId(tripId);
+        return places.stream().map(placeMapper::toDto).toList();
+    }
+
 }
 
 

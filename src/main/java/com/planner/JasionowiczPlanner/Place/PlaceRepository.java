@@ -18,5 +18,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
             @Param("lat") double lat,
             @Param("lon") double lon,
             @Param("radius") double radiusKm);
+    List<Place> findAllByTripId(Long tripId);
 
 }

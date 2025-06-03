@@ -1,28 +1,26 @@
 package com.planner.JasionowiczPlanner.LoginUser;
 
 import com.planner.JasionowiczPlanner.Mapper.LoginUserMapper;
-import com.planner.JasionowiczPlanner.Trip.Trip;
-import jakarta.persistence.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
 @Service
-public class LoginUserService {
+public class LoginUserService implements UserDetailsService {
+
     private LoginUserRepository loginUserRepository;
     private LoginUserMapper loginUserMapper;
-    private PasswordEncoder passwordEncoder;
 
-    public LoginUserService(LoginUserRepository loginUserRepository, LoginUserMapper loginUserMapper, PasswordEncoder passwordEncoder) {
+    public LoginUserService(LoginUserRepository loginUserRepository, LoginUserMapper loginUserMapper) {
         this.loginUserRepository = loginUserRepository;
         this.loginUserMapper = loginUserMapper;
-        this.passwordEncoder = passwordEncoder;
     }
+
 
     public List<LoginUserDTO> getAllUsers() {
       List<LoginUser> loginUser = loginUserRepository.findAll();
@@ -37,29 +35,15 @@ public class LoginUserService {
         return loginUserMapper.toDto(loginUserRepository.getReferenceById(id));
     }
 
-    public void updateUser(Long id, LoginUserDTO dto) {
-        LoginUser loginUser = loginUserRepository.getReferenceById(id);
-        if (dto.getUsername() != null && !dto.getUsername().equals(loginUser.getUsername())) {
-            if (!checkIsUserNameUnique(dto.getUsername())) {
-                throw new IllegalArgumentException("Username already taken!");
-            }
-            loginUser.setUsername(dto.getUsername());
-        }
-        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-        Optional.ofNullable(loginUser.getPassword()).ifPresent(loginUser::setPassword);
-        Optional.ofNullable(loginUser.getEmail()).ifPresent(loginUser::setEmail);
-        Optional.ofNullable(loginUser.getTrips()).ifPresent(loginUser::setTrips);
-        loginUserRepository.save(loginUser);
-    }
+
 
     public boolean checkIsUserNameUnique(String username) {
         return !loginUserRepository.existsByUsername(username);
-
     }
-    public LoginUserDTO getCurrentUser(Authentication auth) {
-         LoginUser loginUser = (LoginUser) auth.getPrincipal();
-         LoginUserDTO userDTO = loginUserMapper.toDto(loginUser);
-                return userDTO;
+    public LoginUserDTO getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser user = (LoginUser) authentication.getPrincipal();
+        return loginUserMapper.toDto(user);
     }
 
     public void setUserRoleToAdmin(Long id) {
@@ -68,15 +52,17 @@ public class LoginUserService {
         loginUserRepository.save(loginUser);
     }
 
-    public void createNewLoginUser(LoginUserDTO dto) {
-        LoginUser loginUser = new LoginUser();
-        loginUser.setUsername(dto.getUsername());
-        loginUser.setPassword(passwordEncoder.encode(dto.getPassword()));
-        loginUser.setName(dto.getName());
-        loginUser.setEmail(dto.getEmail());
-        loginUser.setRole(LoginUserRole.ROLE_USER);
-        loginUser.setTrips(null);
-        loginUserRepository.save(loginUser);
-
+    public LoginUser findByUsernameWithTrips(String username) {
+        return loginUserRepository.findByUsernameFetchTrips(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Nie znaleziono użytkownika"));
     }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return loginUserRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+
 }

@@ -1,9 +1,14 @@
 package com.planner.JasionowiczPlanner.Trip;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.planner.JasionowiczPlanner.LoginUser.LoginUser;
+import com.planner.JasionowiczPlanner.LoginUser.LoginUserDTO;
 import com.planner.JasionowiczPlanner.Place.Place;
+import com.planner.JasionowiczPlanner.Place.PlaceDTO;
 import com.planner.JasionowiczPlanner.Reminder.Reminder;
+import com.planner.JasionowiczPlanner.Reminder.ReminderDTO;
 import com.planner.JasionowiczPlanner.Task.Task;
+import com.planner.JasionowiczPlanner.Task.TaskDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,10 +37,14 @@ public class TripDTO {
     private String country;
     private String city;
     private TripStatus status;
-    private List<Place> places;
-    private List<Task> tasks;
-    private List<Reminder> reminders;
-    private LoginUser loginUser;
+    @JsonIgnore
+    private List<PlaceDTO> places;
+    @JsonIgnore
+    private List<TaskDTO> tasks;
+    @JsonIgnore
+    private List<ReminderDTO> reminders;
+    @JsonIgnore
+    private LoginUserDTO loginUser;
 
 
 }
